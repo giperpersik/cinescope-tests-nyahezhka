@@ -62,28 +62,26 @@ def created_movie(super_admin):
     super_admin.api.movies_api.delete_movie(response["id"], expected_status=[200, 404])
 
 
-@pytest.fixture
-def user_session():
-    user_pool = []
-
-    def _create_user_session():
-        session = requests.Session()
-        user_session = ApiManager(session)
-        user_pool.append(user_session)
-        return user_session
+user_pool = []
 
 
-    yield _create_user_session
-
+@pytest.fixture(scope="session", autouse=True)
+def cleanup_user_sessions():
+    yield
     for user in user_pool:
         user.close_session()
 
 
+def create_user_session():
+    session = requests.Session()
+    user_session = ApiManager(session)
+    user_pool.append(user_session)
+    return user_session
 
 
 @pytest.fixture
-def super_admin(user_session):
-    new_session = user_session()
+def super_admin():
+    new_session = create_user_session()
 
     super_admin = User(
         SuperAdminCreds.USERNAME,
@@ -96,7 +94,6 @@ def super_admin(user_session):
     return super_admin
 
 
-
 @pytest.fixture
 def creation_user_data(test_user: TestUser) -> TestUser:
     return test_user.model_copy(update={
@@ -106,8 +103,8 @@ def creation_user_data(test_user: TestUser) -> TestUser:
 
 
 @pytest.fixture
-def common_user(user_session, super_admin, creation_user_data: TestUser):
-    new_session = user_session()
+def common_user(super_admin, creation_user_data: TestUser):
+    new_session = create_user_session()
 
     common_user = User(
         creation_user_data.email,     # через точку!
@@ -122,8 +119,8 @@ def common_user(user_session, super_admin, creation_user_data: TestUser):
 
 
 @pytest.fixture
-def admin_user(user_session, super_admin, creation_user_data: TestUser):
-    new_session = user_session()
+def admin_user(super_admin, creation_user_data: TestUser):
+    new_session = create_user_session()
 
     # Делаем копию и меняем роль на ADMIN
     admin_user_data = creation_user_data.model_copy(update={

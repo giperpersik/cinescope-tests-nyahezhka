@@ -15,8 +15,8 @@ class TestAuthApi:
     def test_login_user(self, api_manager, test_user, registered_user):
 
         login_data = {
-            "email": registered_user["email"],
-            "password": registered_user["password"]
+            "email": registered_user.email,
+            "password": registered_user.password
         }
 
         response = api_manager.auth_api.login_user(login_data)
@@ -27,12 +27,12 @@ class TestAuthApi:
         user_info = response_json.get("user", {})
         email = user_info.get("email")
         assert access_token is not None, "Токен отсуствует в ответе 🍆"
-        assert email == registered_user["email"], "Email не совпадает"
+        assert email == registered_user.email
 
 
     def test_login_user_incorrect_password(self, api_manager, registered_user):
         login_data_incorrect = {
-            "email": registered_user["email"],
+            "email": registered_user.email,
             "password": "wrong_password_for_test"
         }
 
@@ -62,7 +62,7 @@ class TestAuthApi:
 
 
     def test_get_user_info_unauthorized(self, unauthenticated_api_manager,  registered_user):
-        user_id = registered_user["id"]
+        user_id = registered_user.id
         response = unauthenticated_api_manager.user_api.get_user_info(user_id, expected_status=401)
 
     def test_register_timeout(self, api_manager, test_user):
