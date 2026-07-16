@@ -62,26 +62,10 @@ def created_movie(super_admin):
     super_admin.api.movies_api.delete_movie(response["id"], expected_status=[200, 404])
 
 
-user_pool = []
-
-
-@pytest.fixture(scope="session", autouse=True)
-def cleanup_user_sessions():
-    yield
-    for user in user_pool:
-        user.close_session()
-
-
-def create_user_session():
-    session = requests.Session()
-    user_session = ApiManager(session)
-    user_pool.append(user_session)
-    return user_session
-
-
 @pytest.fixture
 def super_admin():
-    new_session = create_user_session()
+    session = requests.Session()
+    new_session = ApiManager(session)
 
     super_admin = User(
         SuperAdminCreds.USERNAME,
@@ -91,7 +75,8 @@ def super_admin():
     )
 
     super_admin.api.auth_api.authenticate(super_admin.creds)
-    return super_admin
+    yield super_admin
+    session.close()
 
 
 @pytest.fixture
@@ -104,23 +89,26 @@ def creation_user_data(test_user: TestUser) -> TestUser:
 
 @pytest.fixture
 def common_user(super_admin, creation_user_data: TestUser):
-    new_session = create_user_session()
+    session = requests.Session()
+    new_session = ApiManager(session)
 
     common_user = User(
-        creation_user_data.email,     # через точку!
-        creation_user_data.password,  # через точку!
+        creation_user_data.email,
+        creation_user_data.password,
         [Roles.USER.value],
         new_session
     )
 
     super_admin.api.user_api.create_user(creation_user_data)
     common_user.api.auth_api.authenticate(common_user.creds)
-    return common_user
+    yield common_user
+    session.close()
 
 
 @pytest.fixture
 def admin_user(super_admin, creation_user_data: TestUser):
-    new_session = create_user_session()
+    session = requests.Session()
+    new_session = ApiManager(session)
 
     # Делаем копию и меняем роль на ADMIN
     admin_user_data = creation_user_data.model_copy(update={
@@ -128,12 +116,13 @@ def admin_user(super_admin, creation_user_data: TestUser):
     })
 
     admin_user = User(
-        admin_user_data.email,     # через точку!
-        admin_user_data.password,  # через точку!
+        admin_user_data.email,
+        admin_user_data.password,
         [Roles.ADMIN.value],
         new_session
     )
 
     super_admin.api.user_api.create_user(admin_user_data)
     admin_user.api.auth_api.authenticate(admin_user.creds)
-    return admin_user
+    yield admin_user
+    session.close()
