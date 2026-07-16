@@ -32,5 +32,20 @@ class UserApi(CustomRequester):
 
 
 
+    def create_user(self, user_data, expected_status=201):
+        return self.send_request(
+            method="POST",
+            endpoint=USER,
+            data=user_data,
+            expected_status=expected_status
+        )
+
+
+    def get_user(self, user_locator, **kwargs):
+        return self.get_user_info(user_id=user_locator, **kwargs)
+
+
+
+
 
 

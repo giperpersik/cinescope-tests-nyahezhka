@@ -1,4 +1,5 @@
 from constants import REGISTER_ENDPOINT, LOGIN_ENDPOINT
+from models.user import RegisterUserResponse
 import pytest
 import requests
 from utils.data_generator import DataGenerator
@@ -7,9 +8,9 @@ from utils.data_generator import DataGenerator
 class TestAuthApi:
     def test_register_user(self, api_manager, test_user):
         response = api_manager.auth_api.register_user(test_user)
-        assert response.json().get("id"), "Нету айдишника братик"
-        assert response.json()["email"] == test_user["email"], "email не сходится"
-        assert "USER" in response.json()["roles"], "Роль USER отсутствует"
+
+        register_user_response = RegisterUserResponse(**response.json())
+        assert register_user_response.email == test_user.email
 
     def test_login_user(self, api_manager, test_user, registered_user):
 

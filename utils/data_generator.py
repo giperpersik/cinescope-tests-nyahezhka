@@ -30,12 +30,12 @@ class DataGenerator:
     @staticmethod
     def generate_random_movie_data():
         return {
-            "name": f"Test Movie {faker.word().capitalize()}",
+            "name": f"Test Movie {faker.word().capitalize()} {random.randint(10000, 99999)}",
             "description": faker.text(max_nb_chars=100),
             "price": random.randint(100, 1000),
             "location": random.choice(["MSK", "SPB"]),
             "published": True,
-            "genreId": random.randint(1, 5)
+            "genreId": random.randint(4, 10)
         }
 
 
