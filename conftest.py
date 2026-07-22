@@ -9,6 +9,9 @@ from clients.api_manager import ApiManager
 from entities.user import User
 from resources.user_creds import SuperAdminCreds
 from constants.roles import Roles
+from sqlalchemy.orm import Session
+from database.db_client import get_db_session
+from database.db_helpers import DBHelper
 
 
 @pytest.fixture(scope="function")
@@ -80,6 +83,21 @@ def super_admin():
 
 
 @pytest.fixture
+def super_admin_token():
+    session = requests.Session()
+    api = ApiManager(session)
+    response = api.auth_api.login_user({
+        "email": SuperAdminCreds.USERNAME,
+        "password": SuperAdminCreds.PASSWORD
+        }).json()
+    token = response["accessToken"]
+    yield token
+    session.close()
+
+
+
+
+@pytest.fixture
 def creation_user_data(test_user: TestUser) -> TestUser:
     return test_user.model_copy(update={
         "verified": True,
@@ -126,3 +144,18 @@ def admin_user(super_admin, creation_user_data: TestUser):
     admin_user.api.auth_api.authenticate(admin_user.creds)
     yield admin_user
     session.close()
+
+
+@pytest.fixture(scope="module")
+def db_session():
+    session = get_db_session()
+    yield session
+    session.close()
+
+
+@pytest.fixture(scope="module")
+def db(db_session) -> DBHelper:
+    return DBHelper(db_session)
+
+
+

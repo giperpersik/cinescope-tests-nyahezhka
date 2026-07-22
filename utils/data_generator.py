@@ -14,6 +14,10 @@ class DataGenerator:
         return f"{faker.first_name()} {faker.last_name()}"
 
     @staticmethod
+    def generate_random_int(length=10):
+        return random.randint(10**(length-1), (10**length)-1)
+
+    @staticmethod
     def generate_random_password():
         letter = random.choice(string.ascii_letters)  # гарантированно 1 буква
         digit = random.choice(string.digits)  # гарантированно 1 цифра

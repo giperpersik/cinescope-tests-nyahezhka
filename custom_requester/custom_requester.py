@@ -22,6 +22,13 @@ class CustomRequester:
         if isinstance(data, BaseModel):
             data = json.loads(data.model_dump_json(exclude_unset=True))
 
+        # 1 Извлекаем (удаляем из kwargs) параметр token, если он был передан
+        token = kwargs.pop("token", None)
+        if token:
+            # 2 Берем существующий словарь заголовков из kwargs или создаем новый пустой
+            headers = kwargs.setdefault("headers", {})
+            # 3 Записываем туда заголовок авторизации
+            headers["authorization"] = f"Bearer {token}"
         response = self.session.request(method, url, json=data, params=params, **kwargs)
         duration = time.time() - start_time
 

@@ -10,3 +10,5 @@ __pycache__/
 *.csv
 *.env
 .env
+allure-results/
+allure-report/
