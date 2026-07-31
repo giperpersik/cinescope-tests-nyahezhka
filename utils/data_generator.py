@@ -21,7 +21,7 @@ class DataGenerator:
     def generate_random_password():
         letter = random.choice(string.ascii_letters)  # гарантированно 1 буква
         digit = random.choice(string.digits)  # гарантированно 1 цифра
-        special_chars = "?@#$%^&*|:"
+        special_chars = "?@#$"
         all_chars = string.ascii_letters + string.digits + special_chars
         remaining_length = random.randint(6, 18)  # Остальная длина пароля
         remaining_chars = ''.join(random.choices(all_chars, k=remaining_length))

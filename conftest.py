@@ -1,4 +1,5 @@
 from models.user import TestUser
+from db_models.user import UserDBModel
 import requests
 from constants import AUTH_URL, HEADERS, REGISTER_ENDPOINT, LOGIN_ENDPOINT
 import pytest
@@ -42,9 +43,13 @@ def unauthenticated_api_manager():
     session.close()
 
 @pytest.fixture(scope="function")
-def registered_user(api_manager, test_user: TestUser) -> TestUser:
+def registered_user(api_manager, test_user: TestUser, db_session) -> TestUser:
     response = api_manager.auth_api.register_user(test_user).json()
-    test_user.id = response["id"]  # Теперь пишем через точку!
+    test_user.id = response["id"]
+    user_db = db_session.query(UserDBModel).filter(UserDBModel.id == test_user.id).first()
+    if user_db:
+        user_db.verified = True
+        db_session.commit()
     return test_user
 
 
